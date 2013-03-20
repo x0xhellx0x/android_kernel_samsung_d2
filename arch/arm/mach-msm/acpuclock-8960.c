@@ -118,6 +118,7 @@ static struct l2_level l2_freq_tbl[] __initdata = {
 #define AVS(x) .avsdscr_setting = (x)
 
 static struct acpu_level acpu_freq_tbl_slow[] __initdata = {
+	{ 1, {   192000, HFPLL, 2, 0x16 }, L2(0),   925000, AVS(0x40001F) },
 	{ 1, {   384000, PLL_8, 0, 0x00 }, L2(0),   950000, AVS(0x40001F) },
 	{ 0, {   432000, HFPLL, 2, 0x20 }, L2(6),   975000 },
 	{ 1, {   486000, HFPLL, 2, 0x24 }, L2(6),   975000 },
@@ -140,6 +141,7 @@ static struct acpu_level acpu_freq_tbl_slow[] __initdata = {
 	{ 0, {  1404000, HFPLL, 1, 0x34 }, L2(18), 1237500, AVS(0x400015) },
 	{ 1, {  1458000, HFPLL, 1, 0x36 }, L2(18), 1237500, AVS(0x100018) },
 	{ 1, {  1512000, HFPLL, 1, 0x38 }, L2(18), 1250000, AVS(0x400012) },
+	{ 1, {  1674000, HFPLL, 1, 0x3A }, L2(18), 1250000, AVS(0x400012) },
 	{ 0, { 0 } }
 };
 
@@ -167,7 +169,7 @@ static struct acpu_level acpu_freq_tbl_nom[] __initdata = {
 	{ 0, {  1404000, HFPLL, 1, 0x34 }, L2(18), 1187500, AVS(0x400015) },
 	{ 1, {  1458000, HFPLL, 1, 0x36 }, L2(18), 1187500, AVS(0x100018) },
 	{ 1, {  1512000, HFPLL, 1, 0x38 }, L2(18), 1200000, AVS(0x400012) },
-	{ 1, {  1620000, HFPLL, 1, 0x38 }, L2(18), 1200000, AVS(0x400012) },
+	{ 1, {  1674000, HFPLL, 1, 0x3A }, L2(18), 1250000, AVS(0x400012) },
 	{ 0, { 0 } }
 };
 
@@ -195,7 +197,7 @@ static struct acpu_level acpu_freq_tbl_fast[] __initdata = {
 	{ 0, {  1404000, HFPLL, 1, 0x34 }, L2(18), 1137500, AVS(0x400012) },
 	{ 1, {  1458000, HFPLL, 1, 0x36 }, L2(18), 1137500, AVS(0x400012) },
 	{ 1, {  1512000, HFPLL, 1, 0x38 }, L2(18), 1150000, AVS(0x400012) },
-	{ 1, {  1620000, HFPLL, 1, 0x38 }, L2(18), 1150000, AVS(0x400012) },
+	{ 1, {  1674000, HFPLL, 1, 0x3A }, L2(18), 1250000, AVS(0x400012) },
 	{ 0, { 0 } }
 };
 
