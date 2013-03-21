@@ -58,8 +58,8 @@ static struct scalable scalable[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x5501,
-		.vreg[VREG_CORE] = { "krait1", 1300000 },
-		.vreg[VREG_MEM]  = { "krait1_mem", 1150000 },
+		.vreg[VREG_CORE] = { "krait1", 1400000 },
+		.vreg[VREG_MEM]  = { "krait1_mem", 1250000 },
 		.vreg[VREG_DIG]  = { "krait1_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait1_s8", 2050000 },
 		.vreg[VREG_HFPLL_B] = { "krait1_l23", 1800000 },
@@ -118,8 +118,8 @@ static struct l2_level l2_freq_tbl[] __initdata = {
 #define AVS(x) .avsdscr_setting = (x)
 
 static struct acpu_level acpu_freq_tbl_slow[] __initdata = {
-	{ 1, {   192000, HFPLL, 2, 0x16 }, L2(0),   925000, AVS(0x40001F) },
-	{ 1, {   384000, PLL_8, 0, 0x00 }, L2(0),   950000, AVS(0x40001F) },
+	{ 1, {   192000, PLL_8, 0, 0x00 }, L2(0),   950000, AVS(0x40001F) },
+	{ 1, {   384000, HFPLL, 0, 0x00 }, L2(0),   950000 },
 	{ 0, {   432000, HFPLL, 2, 0x20 }, L2(6),   975000 },
 	{ 1, {   486000, HFPLL, 2, 0x24 }, L2(6),   975000 },
 	{ 0, {   540000, HFPLL, 2, 0x28 }, L2(6),  1000000 },
@@ -146,8 +146,8 @@ static struct acpu_level acpu_freq_tbl_slow[] __initdata = {
 };
 
 static struct acpu_level acpu_freq_tbl_nom[] __initdata = {
-	{ 1, {   192000, PLL_8, 0, 0x00 }, L2(0),   850000, AVS(0x40007F) },
-	{ 1, {   384000, PLL_8, 0, 0x00 }, L2(0),   900000, AVS(0x40007F) },
+	{ 1, {   192000, PLL_8, 0, 0x00 }, L2(0),   900000, AVS(0x40007F) },
+	{ 1, {   384000, HFPLL, 0, 0x00 }, L2(0),   900000 },
 	{ 0, {   432000, HFPLL, 2, 0x20 }, L2(6),   925000 },
 	{ 1, {   486000, HFPLL, 2, 0x24 }, L2(6),   925000 },
 	{ 0, {   540000, HFPLL, 2, 0x28 }, L2(6),   950000 },
@@ -174,8 +174,8 @@ static struct acpu_level acpu_freq_tbl_nom[] __initdata = {
 };
 
 static struct acpu_level acpu_freq_tbl_fast[] __initdata = {
-	{ 1, {   192000, PLL_8, 0, 0x00 }, L2(0),   825000, AVS(0x4000FF) },
-	{ 1, {   384000, PLL_8, 0, 0x00 }, L2(0),   850000, AVS(0x4000FF) },
+	{ 1, {   192000, PLL_8, 0, 0x00 }, L2(0),   850000, AVS(0x4000FF) },
+	{ 1, {   384000, HFPLL, 0, 0x00 }, L2(0),   850000 },
 	{ 0, {   432000, HFPLL, 2, 0x20 }, L2(6),   875000 },
 	{ 1, {   486000, HFPLL, 2, 0x24 }, L2(6),   875000 },
 	{ 0, {   540000, HFPLL, 2, 0x28 }, L2(6),   900000 },
