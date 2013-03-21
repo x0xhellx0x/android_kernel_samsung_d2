@@ -212,11 +212,4 @@ obj-$(CONFIG_SND_SOC_MSM_STUB)  += snd-soc-msm-stub.o
 # Amp
 obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
 obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
-<<<<<<< HEAD
 obj-$(CONFIG_SND_SOC_TPA2028D)	+= tpa2028d.o
-=======
-obj-$(CONFIG_SND_SOC_WM2000)	+= snd-soc-wm2000.o
-obj-$(CONFIG_SND_SOC_WM9090)	+= snd-soc-wm9090.o
-
-obj-$(CONFIG_SOUND_CONTROL_HAX_GPL) += sound_control_gpl.o
->>>>>>> 7225583... Sound Control: Sound control for WCD93xx codec
