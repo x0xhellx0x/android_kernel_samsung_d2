@@ -173,6 +173,9 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div, u_int mu
 #define CPUFREQ_GOV_STOP   2
 #define CPUFREQ_GOV_LIMITS 3
 
+extern int GLOBALKT_MIN_FREQ_LIMIT;// = 384000;
+extern int GLOBALKT_MAX_FREQ_LIMIT;// = 1512000; 
+
 struct cpufreq_governor {
 	char	name[CPUFREQ_NAME_LEN];
 	int	(*governor)	(struct cpufreq_policy *policy,
@@ -344,7 +347,9 @@ static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
 	return 0;
 }
 #endif
-
+#define FREQ_TABLE_SIZE 38
+#define FREQ_TABLE_SIZE_OFFSET 6
+#define FREQ_STEPS 30
 
 /*********************************************************************
  *                       CPUFREQ DEFAULT GOVERNOR                    *

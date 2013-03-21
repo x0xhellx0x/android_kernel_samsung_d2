@@ -32,6 +32,11 @@
 
 #include <trace/events/power.h>
 
+static unsigned int isBooted = 0;
+
+int GLOBALKT_MIN_FREQ_LIMIT = 384000;
+int GLOBALKT_MAX_FREQ_LIMIT = 1512000;
+
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
  * level driver of CPUFreq support, and its spinlock. This lock
@@ -619,9 +624,122 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+
+extern void cpufreq_table_init8960(void);
+
+static ssize_t store_scaling_booted(struct cpufreq_policy *policy, const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	unsigned int value = 0;
+	struct cpufreq_policy new_policy;
+
+	pr_alert("store_scaling_booted call open: %d\n", GLOBALKT_MAX_FREQ_LIMIT);
+	ret = sscanf(buf, "%u", &value);
+	if (value == 1)
+	{
+		isBooted = 1;
+		GLOBALKT_MIN_FREQ_LIMIT = 96000;
+#ifdef CONFIG_SUPER_CLOCKED
+		GLOBALKT_MAX_FREQ_LIMIT = 2106000;
+#else
+		GLOBALKT_MAX_FREQ_LIMIT = 1890000;
+#endif
+		cpufreq_get_policy(&new_policy, policy->cpu);
+		new_policy.cpuinfo.min_freq = GLOBALKT_MIN_FREQ_LIMIT;
+		new_policy.cpuinfo.max_freq = GLOBALKT_MAX_FREQ_LIMIT;
+		new_policy.user_policy.min = GLOBALKT_MIN_FREQ_LIMIT;
+		new_policy.user_policy.max = GLOBALKT_MAX_FREQ_LIMIT;
+		ret = __cpufreq_set_policy(policy, &new_policy);
+	}
+	else
+		isBooted = 0;
+	cpufreq_table_init8960();
+	pr_alert("store_scaling_booted call close: %d\n", GLOBALKT_MAX_FREQ_LIMIT);
+	return count;
+}
+
+static ssize_t show_scaling_booted(struct cpufreq_policy *policy, char *buf)
+{
+	return sprintf(buf, "%u\n", isBooted);
+}
+
+static ssize_t store_cpuinfo_max_freq
+	(struct cpufreq_policy *policy, const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	int value = 0;
+
+	ret = sscanf(buf, "%d", &value);
+	if (ret != 1)
+		return -EINVAL;
+
+	if (value > GLOBALKT_MAX_FREQ_LIMIT)
+		value = GLOBALKT_MAX_FREQ_LIMIT;
+
+	policy->cpuinfo.max_freq = value;
+	if (vfreq_lock == 0)
+		policy->user_policy.max = value;
+	ret = __cpufreq_set_policy(policy, policy);
+	//cpufreq_cpu_put(policy);
+	return count;
+}
+
+static ssize_t show_freq_lock(struct cpufreq_policy *policy, char *buf)
+{
+	return sprintf(buf, "%u\n", vfreq_lock);
+}
+static ssize_t store_freq_lock(struct cpufreq_policy *policy,
+					const char *buf, size_t count)
+{
+	unsigned int value = 0;
+	unsigned int ret;
+	ret = sscanf(buf, "%u", &value);
+	if (value > 1)
+		value = 1;
+	vfreq_lock = value;
+
+	return count;
+}
+
+extern ssize_t acpuclk_get_vdd_levels_str(char *buf, int isApp);
+extern void acpuclk_set_vdd(unsigned acpu_khz, int vdd);
+extern void acpuclk_UV_mV_table(int cnt, int vdd_uv[]);
+extern unsigned int get_enable_oc(void);
+
+ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
+{
+	int modu = 0;
+	if (get_enable_oc() == 0)
+		modu = FREQ_TABLE_SIZE_OFFSET;
+	return acpuclk_get_vdd_levels_str(buf, FREQ_STEPS-modu);
+}
+
+ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
+                                      const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	int modu = 0;
+	unsigned int is_en_oc = get_enable_oc();
+	int u[FREQ_STEPS];
+	if (is_en_oc == 0)
+		modu = FREQ_TABLE_SIZE_OFFSET;
+	if (is_en_oc == 1)
+		ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", &u[0], &u[1], &u[2], &u[3], &u[4], &u[5], &u[6], &u[7], &u[8], &u[9], &u[10], &u[11], &u[12], &u[13], &u[14], &u[15], &u[16], &u[17], &u[18], &u[19], &u[20], &u[21], &u[22], &u[23], &u[24], &u[25], &u[26], &u[27], &u[28], &u[29]);
+	else
+		ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", &u[0], &u[1], &u[2], &u[3], &u[4], &u[5], &u[6], &u[7], &u[8], &u[9], &u[10], &u[11], &u[12], &u[13], &u[14], &u[15], &u[16], &u[17], &u[18], &u[19], &u[20], &u[21], &u[22], &u[23], &u[24], &u[25], &u[26], &u[27], &u[28], &u[29]);
+		//ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", &u[0], &u[1], &u[2], &u[3], &u[4], &u[5], &u[6], &u[7], &u[8], &u[9], &u[10], &u[11], &u[12], &u[13], &u[14], &u[15], &u[16], &u[17], &u[18], &u[19], &u[20], &u[21], &u[22], &u[23]);
+	pr_alert("store_UV_mV_table: %d\n", ret);
+	if(ret != (FREQ_STEPS-modu)) {
+		return -EINVAL;
+	}
+
+	acpuclk_UV_mV_table(FREQ_STEPS-modu, u);
+	return count;
+}
+
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
-cpufreq_freq_attr_ro(cpuinfo_max_freq);
+cpufreq_freq_attr_rw(cpuinfo_max_freq);
 cpufreq_freq_attr_ro(cpuinfo_transition_latency);
 cpufreq_freq_attr_ro(scaling_available_governors);
 cpufreq_freq_attr_ro(scaling_driver);
@@ -634,6 +752,9 @@ cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
+cpufreq_freq_attr_rw(scaling_booted);
+cpufreq_freq_attr_rw(freq_lock);
+cpufreq_freq_attr_rw(UV_mV_table);
 
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
@@ -648,6 +769,9 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
+        &scaling_booted.attr,
+        &freq_lock.attr,
+        &UV_mV_table.attr, 
 	NULL
 };
 
@@ -1730,6 +1854,30 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 	if (ret)
 		goto error_out;
 
+        pr_alert("SET POLICY1-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+        //if (isBooted == 0)
+        //{
+          pr_alert("SET POLICY2-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+          if (policy->cpuinfo.min_freq != GLOBALKT_MIN_FREQ_LIMIT || policy->cpuinfo.max_freq != GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY3-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->cpuinfo.min_freq = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->cpuinfo.max_freq = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+          if (policy->min < GLOBALKT_MIN_FREQ_LIMIT || policy->max > GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY4-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->min = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->max = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+          if (policy->user_policy.min < GLOBALKT_MIN_FREQ_LIMIT || policy->user_policy.max > GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY5-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->user_policy.min = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->user_policy.max = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+        //}
+
 	/* adjust if necessary - all reasons */
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 			CPUFREQ_ADJUST, policy);
@@ -1743,6 +1891,30 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 	ret = cpufreq_driver->verify(policy);
 	if (ret)
 		goto error_out;
+
+        pr_alert("SET POLICY1-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+        //if (isBooted == 0)
+        //{
+          pr_alert("SET POLICY2-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+          if (policy->cpuinfo.min_freq != GLOBALKT_MIN_FREQ_LIMIT || policy->cpuinfo.max_freq != GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY3-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->cpuinfo.min_freq = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->cpuinfo.max_freq = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+          if (policy->min < GLOBALKT_MIN_FREQ_LIMIT || policy->max > GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY4-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->min = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->max = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+          if (policy->user_policy.min < GLOBALKT_MIN_FREQ_LIMIT || policy->user_policy.max > GLOBALKT_MAX_FREQ_LIMIT)
+          {
+            pr_alert("SET POLICY5-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+            policy->user_policy.min = GLOBALKT_MIN_FREQ_LIMIT;
+            policy->user_policy.max = GLOBALKT_MAX_FREQ_LIMIT;
+          }
+        //} 
 
 	/* notification of the new policy */
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
@@ -1788,6 +1960,8 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 		pr_debug("governor: change or update limits\n");
 		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
 	}
+        pr_alert("SET POLICY7-%d-%d\n", policy->cpuinfo.min_freq, policy->cpuinfo.max_freq);
+
 
 error_out:
 	return ret;
