@@ -254,6 +254,8 @@ const struct firmware *fw_mbin[SECTION_NUM];
 static unsigned char g_wr_buf[1024 + 3 + 2];
 #endif
 
+extern void hotplugap_boostpulse(void);
+
 int touch_is_pressed;
 EXPORT_SYMBOL(touch_is_pressed);
 
