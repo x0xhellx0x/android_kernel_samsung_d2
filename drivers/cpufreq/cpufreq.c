@@ -625,17 +625,17 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 
 static ssize_t show_enable_auto_hotplug(struct cpufreq_policy *policy, char *buf)
 {
-        return sprintf(buf, "%u\n", Lenable_auto_hotplug);
+	return sprintf(buf, "%u\n", Lenable_auto_hotplug);
 }
 static ssize_t store_enable_auto_hotplug(struct cpufreq_policy *policy,
-                                        const char *buf, size_t count)
+					const char *buf, size_t count)
 {
-        unsigned int val = 0;
-        unsigned int ret;
-        ret = sscanf(buf, "%u", &val);
-        Lenable_auto_hotplug = val;
-        apenable_auto_hotplug((bool) Lenable_auto_hotplug);
-        return count;
+	unsigned int val = 0;
+	unsigned int ret;
+	ret = sscanf(buf, "%u", &val);
+	Lenable_auto_hotplug = val;
+	apenable_auto_hotplug((bool) Lenable_auto_hotplug);
+	return count;
 }
  
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
@@ -649,6 +649,7 @@ cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
 cpufreq_freq_attr_ro(cpu_utilization);
+cpufreq_freq_attr_rw(enable_auto_hotplug);
 cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
@@ -667,7 +668,7 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
-        &enable_auto_hotplug.attr,
+	&enable_auto_hotplug.attr,
 	NULL
 };
 
