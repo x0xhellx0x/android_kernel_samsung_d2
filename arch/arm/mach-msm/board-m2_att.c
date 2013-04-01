@@ -190,6 +190,10 @@ extern unsigned int system_rev;
 struct tsp_callbacks *charger_callbacks;
 #endif
 
+#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
+int id_set_two_phase_freq(int cpufreq);
+#endif
+
 static struct platform_device msm_fm_platform_init = {
 	.name = "iris_fm",
 	.id   = -1,
@@ -5265,6 +5269,9 @@ static void __init msm8960_tsens_init(void)
 
 static void __init samsung_m2_att_init(void)
 {
+#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
+	id_set_two_phase_freq(1134000);
+#endif
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 	platform_device_register(&ram_console_device);
 #endif
