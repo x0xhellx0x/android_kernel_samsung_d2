@@ -439,11 +439,13 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 
 		if (mipi_dsi_pdata->splash_is_enabled &&
 			!mipi_dsi_pdata->splash_is_enabled()) {
+			mipi_dsi_prepare_clocks();
 			mipi_dsi_ahb_ctrl(1);
 			MIPI_OUTP(MIPI_DSI_BASE + 0x118, 0);
 			MIPI_OUTP(MIPI_DSI_BASE + 0x0, 0);
 			MIPI_OUTP(MIPI_DSI_BASE + 0x200, 0);
 			mipi_dsi_ahb_ctrl(0);
+			mipi_dsi_unprepare_clocks();
 		}
 		mipi_dsi_resource_initialized = 1;
 
@@ -596,6 +598,9 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 	/*
 	 * register in mdp driver
 	 */
+
+	esc_byte_ratio = pinfo->mipi.esc_byte_ratio;
+
 	rc = platform_device_add(mdp_dev);
 	if (rc)
 		goto mipi_dsi_probe_err;
@@ -605,8 +610,6 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 #if defined(CONFIG_MIPI_SAMSUNG_ESD_REFRESH)
 	register_mipi_dev(pdev);
 #endif
-
-	esc_byte_ratio = pinfo->mipi.esc_byte_ratio;
 
 	if (!mfd->cont_splash_done)
 		cont_splash_clk_ctrl(1);
