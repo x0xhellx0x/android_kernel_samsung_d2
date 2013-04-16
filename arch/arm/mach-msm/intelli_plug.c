@@ -1,6 +1,7 @@
 /*
  * Author: Paul Reioux aka Faux123 <reioux@gmail.com>
  *
+ * Copyright 2013 Paul Reioux
  * Copyright 2012 Paul Reioux
  *
  * This software is licensed under the terms of the GNU General Public
