@@ -493,6 +493,7 @@ ssize_t mdp4_dsi_video_show_event(struct device *dev,
 	ret = wait_for_completion_interruptible_timeout(&vctrl->vsync_comp,
 		msecs_to_jiffies(VSYNC_PERIOD * 4));
 	if (ret <= 0) {
+		complete_all(&vctrl->vsync_comp);
 		vctrl->wait_vsync_cnt = 0;
 		vctrl->vsync_time = ktime_get();
 	}
@@ -530,6 +531,27 @@ void mdp4_dsi_vsync_init(int cndx)
 	atomic_set(&vctrl->suspend, dsi_video_enabled ? 0 : 1);
 	atomic_set(&vctrl->vsync_resume, 1);
 	spin_lock_init(&vctrl->spin_lock);
+}
+
+void mdp4_dsi_video_free_base_pipe(struct msm_fb_data_type *mfd)
+{
+	struct vsycn_ctrl *vctrl;
+	struct mdp4_overlay_pipe *pipe;
+
+	vctrl = &vsync_ctrl_db[0];
+	pipe = vctrl->base_pipe;
+
+	if (pipe == NULL)
+		return ;
+	/* adb stop */
+	if (pipe->pipe_type == OVERLAY_TYPE_BF)
+		mdp4_overlay_borderfill_stage_down(pipe);
+
+	/* base pipe may change after borderfill_stage_down */
+	pipe = vctrl->base_pipe;
+	mdp4_mixer_stage_down(pipe, 1);
+	mdp4_overlay_pipe_free(pipe);
+	vctrl->base_pipe = NULL;
 }
 
 void mdp4_dsi_video_base_swap(int cndx, struct mdp4_overlay_pipe *pipe)
@@ -799,6 +821,7 @@ int mdp4_dsi_video_off(struct platform_device *pdev)
 	struct mdp4_overlay_pipe *pipe;
 	struct vsync_update *vp;
 	unsigned long flags;
+	int mixer = 0;
 	int undx, need_wait = 0;
 
 	mfd = (struct msm_fb_data_type *)platform_get_drvdata(pdev);
@@ -840,7 +863,8 @@ int mdp4_dsi_video_off(struct platform_device *pdev)
 
 	if (pipe) {
 		/* sanity check, free pipes besides base layer */
-		mdp4_overlay_unset_mixer(pipe->mixer_num);
+		mixer = pipe->mixer_num;
+		mdp4_overlay_unset_mixer(mixer);
 		if (mfd->ref_cnt == 0) {
 			/* adb stop */
 			if (pipe->pipe_type == OVERLAY_TYPE_BF)
@@ -867,6 +891,14 @@ int mdp4_dsi_video_off(struct platform_device *pdev)
 		vctrl->vsync_irq_enabled = 0;
 		vsync_irq_disable(INTR_PRIMARY_VSYNC, MDP_PRIM_VSYNC_TERM);
 	}
+
+	/*
+	 * clean up ion freelist
+	 * there need two stage to empty ion free list
+	 * therefore need call unmap freelist twice
+	 */
+	mdp4_overlay_iommu_unmap_freelist(mixer);
+	mdp4_overlay_iommu_unmap_freelist(mixer);
 
 	/* mdp clock off */
 	mdp_clk_ctrl(0);

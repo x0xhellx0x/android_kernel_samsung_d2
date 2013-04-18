@@ -81,20 +81,20 @@ static int ntarget_loads = ARRAY_SIZE(default_target_loads);
 /*
  * The minimum amount of time to spend at a frequency before we can ramp down.
  */
-#define DEFAULT_MIN_SAMPLE_TIME (60 * USEC_PER_MSEC)
+#define DEFAULT_MIN_SAMPLE_TIME 10000
 static unsigned long min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
 
 /*
  * The sample rate of the timer used to increase frequency
  */
-#define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
+#define DEFAULT_TIMER_RATE 30000
 static unsigned long timer_rate = DEFAULT_TIMER_RATE;
 
 /*
  * Wait this long before raising speed above hispeed, by default a single
  * timer interval.
  */
-#define DEFAULT_ABOVE_HISPEED_DELAY DEFAULT_TIMER_RATE
+#define DEFAULT_ABOVE_HISPEED_DELAY 50000
 static unsigned int default_above_hispeed_delay[] = {
 	DEFAULT_ABOVE_HISPEED_DELAY };
 static spinlock_t above_hispeed_delay_lock;
@@ -1152,6 +1152,7 @@ static int __init cpufreq_interactive_init(void)
 
 	spin_lock_init(&target_loads_lock);
 	spin_lock_init(&speedchange_cpumask_lock);
+	spin_lock_init(&above_hispeed_delay_lock);
 	mutex_init(&gov_lock);
 	speedchange_task =
 		kthread_create(cpufreq_interactive_speedchange_task, NULL,
